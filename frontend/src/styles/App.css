@@ -1,0 +1,195 @@
+@import './globals/reset.css';
+@import './globals/variables.css';
+@import './globals/animations.css';
+
+@import './components/header.css';
+@import './components/navigation.css';
+@import './components/footer.css';
+@import './components/modal.css';
+@import './components/forms.css';
+@import './components/buttons.css';
+@import './components/loading.css';
+@import './components/toastify.css';
+
+@import './pages/auth.css';
+@import './pages/parking.css';
+@import './pages/reports.css';
+@import './pages/history.css';
+@import './pages/statistics.css';
+
+@import './utils/responsive.css';
+@import './utils/utilities.css';
+
+.App {
+  text-align: center;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex-grow: 1;
+  padding: 120px 20px 40px 20px;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+*:focus {
+  outline: 2px solid #667eea;
+  outline-offset: 2px;
+}
+
+.js-focus-visible *:focus:not(.focus-visible) {
+  outline: none;
+}
+
+@media (prefers-contrast: high) {
+  .parking-spot {
+    border: 2px solid currentColor;
+  }
+  
+  .nav-list a,
+  .nav-list button {
+    border: 1px solid currentColor;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-primary: #e2e8f0;
+    --text-secondary: #a0aec0;
+    --bg-glass: rgba(45, 55, 72, 0.95);
+  }
+}
+
+@media print {
+  .App-header,
+  .mobile-menu,
+  .export-buttons,
+  .action-modal,
+  .vehicle-entry-modal {
+    display: none !important;
+  }
+  
+  main {
+    padding: 20px !important;
+  }
+  
+  .parking-lot-container {
+    background: white !important;
+    box-shadow: none !important;
+  }
+  
+  .parking-spot {
+    border: 1px solid #000 !important;
+    background: white !important;
+    color: black !important;
+  }
+  
+  .parking-spot.occupied {
+    background: #f0f0f0 !important;
+  }
+}
+
+::selection {
+  background: rgba(102, 126, 234, 0.3);
+  color: inherit;
+}
+
+::-moz-selection {
+  background: rgba(102, 126, 234, 0.3);
+  color: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(102, 126, 234, 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(102, 126, 234, 0.7);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(102, 126, 234, 0.5) rgba(255, 255, 255, 0.1);
+}
+
+.loading-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.error-boundary {
+  padding: 40px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  margin: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.error-boundary h2 {
+  color: #e53e3e;
+  margin-bottom: 20px;
+}
+
+.error-boundary p {
+  color: #4a5568;
+  margin-bottom: 20px;
+}
+
+.error-boundary button {
+  padding: 12px 24px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.error-boundary button:hover {
+  background: #5a67d8;
+}

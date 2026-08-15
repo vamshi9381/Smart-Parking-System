@@ -1,0 +1,23 @@
+# React / Node
+frontend/node_modules/
+frontend/build/
+npm-debug.log*
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Logs
+*.log
+
+# Database
+database.db

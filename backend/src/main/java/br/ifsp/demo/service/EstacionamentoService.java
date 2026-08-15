@@ -1,0 +1,195 @@
+package br.ifsp.demo.service;
+
+import br.ifsp.demo.dto.CriarEstacionamentoDTO;
+import br.ifsp.demo.model.Estacionamento;
+import br.ifsp.demo.model.RegistroEntrada;
+import br.ifsp.demo.model.Veiculo;
+import br.ifsp.demo.model.Pagamento;
+import br.ifsp.demo.repository.EstacionamentoRepository;
+import br.ifsp.demo.repository.PagamentoRepository;
+import br.ifsp.demo.repository.RegistroEntradaRepository;
+import br.ifsp.demo.repository.VeiculoRepository;
+import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.time.LocalDateTime;
+import java.util.IllegalFormatWidthException;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+@Service
+@Transactional
+public class EstacionamentoService {
+
+    private final EstacionamentoRepository estacionamentoRepository;
+    private final RegistroEntradaRepository registroEntradaRepository;
+    private final PagamentoRepository pagamentoRepository;
+    private final VeiculoService veiculoService;
+    private final CalculadoraDeTarifa calculadoraDeTarifa;
+
+    public EstacionamentoService(EstacionamentoRepository estacionamentoRepository,
+                                 RegistroEntradaRepository registroEntradaRepository,
+                                 PagamentoRepository pagamentoRepository,
+                                 VeiculoService veiculoService,
+                                 CalculadoraDeTarifa calculadoraDeTarifa) {
+        this.estacionamentoRepository = estacionamentoRepository;
+        this.registroEntradaRepository = registroEntradaRepository;
+        this.pagamentoRepository = pagamentoRepository;
+        this.veiculoService = veiculoService;
+        this.calculadoraDeTarifa = calculadoraDeTarifa;
+    }
+
+    @Transactional
+    public RegistroEntrada registrarEntrada(Veiculo veiculo, UUID idEstacionamento, Integer vagaId) {
+
+        if(veiculo == null)
+            throw new IllegalArgumentException("Vehicle cannot be null");
+
+        if(idEstacionamento == null)
+            throw new IllegalArgumentException("Parking lot ID cannot be null");
+
+        if(vagaId == null)
+            throw new IllegalArgumentException("Spot number cannot be null");
+
+        if(vagaId <= 0)
+            throw new IllegalArgumentException("Spot number must be greater than zero");
+
+        Estacionamento estacionamento = estacionamentoRepository.findById(idEstacionamento)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parking lot not found"));
+
+        Optional<RegistroEntrada> vagaOcupada = registroEntradaRepository.findByVagaId(vagaId);
+
+        if (vagaOcupada.isPresent()) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Spot " + vagaId + " is already occupied");
+        }
+
+        long veiculosEstacionados = registroEntradaRepository.count();
+
+        if (veiculosEstacionados >= estacionamento.getCapacidade()) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Parking lot is full. Maximum capacity reached.");
+        }
+
+        Optional<Veiculo> veiculoExistenteOpt = veiculoService.buscarPorPlaca(veiculo.getPlaca());
+        if (veiculoExistenteOpt.isPresent()) {
+            Optional<RegistroEntrada> entradaExistenteOpt = registroEntradaRepository.findByVeiculo(veiculoExistenteOpt.get());
+            if (entradaExistenteOpt.isPresent()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Vehicle already has an active entry in spot " + entradaExistenteOpt.get().getVagaId());
+            }
+        }
+
+        Veiculo veiculoCadastrado = veiculoService.obterOuCadastrarVeiculo(veiculo);
+        RegistroEntrada registroEntrada = new RegistroEntrada(veiculoCadastrado, vagaId);
+        return registroEntradaRepository.save(registroEntrada);
+    }
+
+    public Integer findNextAvailableSpot() {
+        List<Integer> vagasOcupadas = registroEntradaRepository.findAllOccupiedSpotIds();
+
+        for (int i = 1; i <= 200; i++) {
+            if (!vagasOcupadas.contains(i)) {
+                return i;
+            }
+        }
+        throw new ResponseStatusException(HttpStatus.CONFLICT, "All spots are occupied");
+    }
+
+    @Transactional
+    public RegistroEntrada registrar(Veiculo veiculoDados, UUID idEstacionamento) {
+        if(veiculoDados == null)
+            throw new IllegalArgumentException("Vehicle to register cannot be null");
+
+        if(idEstacionamento == null)
+            throw new IllegalArgumentException("Parking lot ID cannot be null");
+
+        Integer vagaId = findNextAvailableSpot();
+        return registrarEntrada(veiculoDados, idEstacionamento, vagaId);
+    }
+
+    @Transactional
+    public Pagamento registrarSaida(String placa) {
+
+        if(placa == null || placa.trim().isEmpty())
+            throw new IllegalArgumentException("Plate cannot be null or empty");
+
+        Estacionamento estacionamento = buscarEstacionamentoAtual();
+
+        Veiculo veiculo = veiculoService.buscarPorPlaca(placa)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle is not registered"));
+
+        RegistroEntrada registroEntrada = registroEntradaRepository.findByVeiculo(veiculo)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No active entry record for this vehicle"));
+
+        Pagamento pagamento = estacionamento.registroSaida(registroEntrada, LocalDateTime.now(), calculadoraDeTarifa);
+
+        pagamentoRepository.save(pagamento);
+        registroEntradaRepository.delete(registroEntrada);
+
+        return pagamento;
+    }
+
+    @Transactional
+    public Estacionamento criarEstacionamento(CriarEstacionamentoDTO dto) {
+        if(dto == null)
+            throw new IllegalArgumentException("Parking creation data cannot be null");
+
+        Estacionamento estacionamento = new Estacionamento(
+                dto.nome(),
+                dto.endereco(),
+                dto.capacidade()
+        );
+
+        return estacionamentoRepository.save(estacionamento);
+    }
+
+    public Estacionamento buscarEstacionamento(UUID id) {
+        if (id == null) {
+            throw new IllegalArgumentException("Parking lot ID cannot be null");
+        }
+        return estacionamentoRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parking lot not found with ID: " + id));
+    }
+
+    public Estacionamento buscarEstacionamentoAtual() {
+        return estacionamentoRepository.findAll().stream().findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("No parking lot found"));
+    }
+
+    public boolean cancelarEntrada(String placa) {
+
+        if(placa == null || placa.trim().isEmpty())
+            throw new IllegalArgumentException("Plate cannot be null or empty");
+
+        Veiculo veiculo = veiculoService.buscarPorPlaca(placa)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle not found"));
+
+        RegistroEntrada entrada = registroEntradaRepository.findByVeiculo(veiculo)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle does not have a registered entry to cancel"));
+
+        registroEntradaRepository.delete(entrada);
+        return true;
+    }
+
+    public RegistroEntrada buscarEntrada(String placa) {
+
+        if(placa == null || placa.trim().isEmpty())
+            throw new IllegalArgumentException("Plate cannot be null or empty");
+
+        Veiculo veiculo = veiculoService.buscarPorPlaca(placa)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "This vehicle is not in the parking lot"));
+
+        return registroEntradaRepository.findByVeiculo(veiculo)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "There is no entry registered for this vehicle"));
+    }
+
+    public List<RegistroEntrada> getAllEntradas() {
+        return registroEntradaRepository.findAll();
+    }
+}
