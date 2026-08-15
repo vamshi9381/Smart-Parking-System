@@ -1,93 +1,90 @@
-![NavbarGit](frontend/src/assets/images/NavbarGit.png)
+# 🚗 Smart Parking System
 
-# 🚗 Sistema de Controle de Estacionamento
+A full-stack web application for managing parking operations, including vehicle registration, parking entry and exit, parking availability, payment calculation, authentication, statistics, and report generation.
 
-Projeto completo de gerenciamento de estacionamento, desenvolvido em **Spring Boot** com front-end integrado.  
-Permite cadastro de veículos, controle de entrada/saída, relatórios e autenticação de usuários.
-
----
-
-## ✨ Funcionalidades
-
-### Back-end
-- Cadastro de veículos (placa, modelo, cor)
-- Registro de entrada/saída com cálculo automático de permanência
-- Geração de relatórios diários (PDF/CSV)
-- Autenticação JWT para acesso seguro
-
-### Front-end
-- Interface Web responsiva (React)
-- Login e registro de usuários
-- Dashboard com métricas em tempo real
-- Formulários para cadastro de veículos e pagamentos
+The system is built with **Java Spring Boot** for the backend and **React** for the frontend.
 
 ---
 
-## 🔧 Tecnologias Utilizadas
+## ✨ Features
 
-### Back-end
+### Backend
+
+- Vehicle registration and management
+- Vehicle entry and exit tracking
+- Automatic parking duration calculation
+- Parking spot management
+- Automatic payment calculation
+- Daily and monthly reports
+- PDF and CSV report generation
+- JWT-based authentication
+- RESTful APIs
+- Swagger/OpenAPI documentation
+
+### Frontend
+
+- Responsive React web interface
+- User login and registration
+- Parking dashboard
+- Real-time parking statistics
+- Vehicle registration forms
+- Vehicle history
+- Payment management
+- Daily and monthly reports
+- English user interface
+
+---
+
+## 🛠️ Technologies
+
+### Backend
+
 - Java 21
-- Spring Boot 3.2
+- Spring Boot 3.4.3
 - Spring Security
 - Spring Data JPA
-- H2 Database (testes)
-- Lombok
-- OpenAPI (Swagger)
+- Hibernate
+- JWT
+- SQLite
+- Maven
+- OpenAPI / Swagger
 
-### Front-end
-- React 18
-- Axios (integração com API)
-- Bootstrap 5
+### Frontend
 
-### Testes
+- React
+- JavaScript
+- Axios
+- React Router
+- CSS
+
+### Testing
+
+- JUnit
 - Mockito
-- Pitest (mutation testing)
+- Mutation Testing
 
 ---
 
-## 🚀 Configuração e Execução
+## 📁 Project Structure
 
-### Pré-requisitos
-- Java 21
-- Node.js 18+
-- MySQL 8+ (opcional para produção)
-
-### Back-end
-
-Clonar repositório
-git clone https://github.com/Alan-VSouza/Projeto-Estacionamento.git
-
-Entrar na pasta do projeto
-cd Projeto-Estacionamento/backend
-
-Executar aplicação através da execução de DemoAuthAppApplication
-
-### Front-end
-cd Projeto-Estacionamento/frontend
-
-Instalar dependências
-npm install
-
-Executar aplicação
-npm start
-
-Acesse: `http://localhost:3000`
-
-## 🔒 Autenticação
-A autenticação é protegidos por JWT. Sendo utilizado os Endpoints:
-- **Registro:** POST `/api/auth/register`
-- **Login:** POST `/api/auth/login`
-
-Faça o registro na página de Register e o devido Login para ter acesso as funções.
-
----
-
-## 📊 Qualidade
-![Cobertura de Código](https://img.shields.io/badge/coverage-100%25-brightgreen)
-![Mutantes Mortos](https://img.shields.io/badge/mutants-99%25-brightgreen)
-![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
-
----
-
-## 📄 Documentação da API
-Acesse `http://localhost:8080/swagger-ui.html` após iniciar o back-end.
+```text
+Smart-Parking-System/
+│
+├── backend/
+│   ├── src/
+│   │   ├── main/
+│   │   │   └── java/
+│   │   └── test/
+│   └── pom.xml
+│
+├── frontend/
+│   ├── public/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   └── styles/
+│   └── package.json
+│
+├── .gitignore
+└── README.md
