@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom'; 
 import { ToastContainer } from 'react-toastify';
@@ -93,7 +94,7 @@ function App() {
               <img src={logo} alt="Smart Parking Logo" className="header-logo" />
               Smart Parking
             </a>
-            </h1>
+          </h1>
           <nav>
             <ul className={`nav-list ${mobileMenuActive ? 'active' : ''}`}>
               {isAuthenticated && (
@@ -212,7 +213,7 @@ function App() {
           </Routes>
         </main>
         <footer>
-          <p>&copy; {new Date().getFullYear()} Smart Parking System - Developed by Alan, Ana and Fabiano</p>
+          <p>&copy; {new Date().getFullYear()} Smart Parking System - Developed by Vamshi Goud</p>
         </footer>
         
         <ToastContainer
