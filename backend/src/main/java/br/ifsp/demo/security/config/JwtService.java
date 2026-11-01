@@ -1,3 +1,4 @@
+
 package br.ifsp.demo.security.config;
 
 import io.jsonwebtoken.Claims;
@@ -20,6 +21,7 @@ public class JwtService {
 
     @Value("${application.jwt.secretKey}")
     private String secretKey;
+
     @Value("${application.jwt.tokenExpiration}")
     private long jwtExpiration;
 
@@ -33,7 +35,8 @@ public class JwtService {
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+        return username.equals(userDetails.getUsername())
+                && !isTokenExpired(token);
     }
 
     private boolean isTokenExpired(String token) {
@@ -41,25 +44,29 @@ public class JwtService {
         return expiration.before(new Date());
     }
 
-    public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
-         return Jwts
-                 .builder()
-                 .setClaims(extraClaims)
-                 .setSubject(userDetails.getUsername())
-                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
-                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
-                 .compact();
+    public String generateToken(
+            Map<String, Object> extraClaims,
+            UserDetails userDetails) {
+
+        return Jwts.builder()
+                .setClaims(extraClaims)
+                .setSubject(userDetails.getUsername())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
+                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+                .compact();
     }
 
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+    public <T> T extractClaim(
+            String token,
+            Function<Claims, T> claimsResolver) {
+
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts
-                .parserBuilder()
+        return Jwts.parserBuilder()
                 .setSigningKey(getSignInKey())
                 .build()
                 .parseClaimsJws(token)
@@ -67,7 +74,8 @@ public class JwtService {
     }
 
     private Key getSignInKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        String cleanSecret = secretKey.replaceAll("\\s", "");
+        byte[] keyBytes = Decoders.BASE64.decode(cleanSecret);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }
