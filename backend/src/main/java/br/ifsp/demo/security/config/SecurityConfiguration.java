@@ -1,3 +1,4 @@
+
 package br.ifsp.demo.security.config;
 
 import lombok.RequiredArgsConstructor;
@@ -21,32 +22,65 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 public class SecurityConfiguration {
 
     private static final String[] WHITE_LIST_URL = {
+
+            // Authentication APIs
             "/api/v1/authenticate",
             "/api/v1/register",
+
+            // Swagger UI
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+
+            // OpenAPI documentation
+            "/v3/api-docs",
+            "/v3/api-docs/**",
+
+            // Your existing custom Swagger paths
             "/api/v1/api-docs/**",
+            "/api/v1/openapi",
             "/api/v1/openapi/**",
             "/api/v1/swagger-ui/**",
+
+            // Existing parking APIs
             "/api/estacionamento/entradas",
             "/estacionamento/registar-entrada"
     };
+
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final AuthenticationProvider authenticationProvider;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http) throws Exception {
+
         http
                 .csrf(AbstractHttpConfigurer::disable)
+
                 .cors(withDefaults())
+
                 .authorizeHttpRequests(req ->
                         req.requestMatchers(WHITE_LIST_URL)
                                 .permitAll()
                                 .anyRequest()
                                 .authenticated()
                 )
-                .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
+
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(STATELESS)
+                )
+
                 .authenticationProvider(authenticationProvider)
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(it -> it.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)));
+
+                .addFilterBefore(
+                        jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class
+                )
+
+                .exceptionHandling(it ->
+                        it.authenticationEntryPoint(
+                                new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)
+                        )
+                );
 
         return http.build();
     }
